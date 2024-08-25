@@ -20,13 +20,13 @@ import time
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import grpc
+import kubeflow.katib.katib_api_pb2 as katib_api_pb2
+import kubeflow.katib.katib_api_pb2_grpc as katib_api_pb2_grpc
 from kubeflow.katib import models
 from kubeflow.katib.api_client import ApiClient
 from kubeflow.katib.constants import constants
-import kubeflow.katib.katib_api_pb2 as katib_api_pb2
 from kubeflow.katib.utils import utils
-from kubernetes import client
-from kubernetes import config
+from kubernetes import client, config
 
 logger = logging.getLogger(__name__)
 
@@ -1306,21 +1306,18 @@ class KatibClient(object):
 
         namespace = namespace or self.namespace
 
-        db_manager_address = db_manager_address.split(":")
-        channel = grpc.beta.implementations.insecure_channel(
-            db_manager_address[0], int(db_manager_address[1])
-        )
+        channel = grpc.insecure_channel(db_manager_address)
 
-        with katib_api_pb2.beta_create_DBManager_stub(channel) as client:
-            try:
-                # When metric name is empty, we select all logs from the Katib DB.
-                observation_logs = client.GetObservationLog(
-                    katib_api_pb2.GetObservationLogRequest(trial_name=name),
-                    timeout=timeout,
-                )
-            except Exception as e:
-                raise RuntimeError(
-                    f"Unable to get metrics for Trial {namespace}/{name}. Exception: {e}"
-                )
+        client = katib_api_pb2_grpc.DBManagerStub(channel)
+        try:
+            # When metric name is empty, we select all logs from the Katib DB.
+            observation_logs = client.GetObservationLog(
+                katib_api_pb2.GetObservationLogRequest(trial_name=name),
+                timeout=timeout,
+            )
+        except Exception as e:
+            raise RuntimeError(
+                f"Unable to get metrics for Trial {namespace}/{name}. Exception: {e}"
+            )
 
-            return observation_logs.observation_log.metric_logs
+        return observation_logs.observation_log.metric_logs

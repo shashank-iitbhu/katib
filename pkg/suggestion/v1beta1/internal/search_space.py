@@ -16,12 +16,14 @@ import logging
 
 import numpy as np
 
-from pkg.apis.manager.v1beta1.python import api_pb2 as api
-from pkg.suggestion.v1beta1.internal.constant import CATEGORICAL
-from pkg.suggestion.v1beta1.internal.constant import DISCRETE
-from pkg.suggestion.v1beta1.internal.constant import DOUBLE
-from pkg.suggestion.v1beta1.internal.constant import INTEGER
 import pkg.suggestion.v1beta1.internal.constant as constant
+from pkg.apis.manager.v1beta1.python import api_pb2 as api
+from pkg.suggestion.v1beta1.internal.constant import (
+    CATEGORICAL,
+    DISCRETE,
+    DOUBLE,
+    INTEGER,
+)
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -40,8 +42,7 @@ class HyperParameterSearchSpace(object):
         elif experiment.spec.objective.type == api.MINIMIZE:
             search_space.goal = constant.MIN_GOAL
         for p in experiment.spec.parameter_specs.parameters:
-            search_space.params.append(
-                HyperParameterSearchSpace.convert_parameter(p))
+            search_space.params.append(HyperParameterSearchSpace.convert_parameter(p))
         return search_space
 
     @staticmethod
@@ -50,15 +51,20 @@ class HyperParameterSearchSpace(object):
 
         for parameter in search_space.params:
             if parameter.type == INTEGER:
-                combinations[parameter.name] = range(int(parameter.min), int(parameter.max)+1, int(parameter.step))
+                combinations[parameter.name] = range(
+                    int(parameter.min), int(parameter.max) + 1, int(parameter.step)
+                )
             elif parameter.type == DOUBLE:
                 if parameter.step == "" or parameter.step is None:
                     raise Exception(
-                        "Param {} step is nil; For discrete search space, all parameters must include step".
-                        format(parameter.name)
+                        "Param {} step is nil; For discrete search space, all parameters "
+                        "must include step".format(parameter.name)
                     )
-                double_list = np.arange(float(parameter.min), float(parameter.max)+float(parameter.step),
-                                        float(parameter.step))
+                double_list = np.arange(
+                    float(parameter.min),
+                    float(parameter.max) + float(parameter.step),
+                    float(parameter.step),
+                )
                 if double_list[-1] > float(parameter.max):
                     double_list = double_list[:-1]
                 combinations[parameter.name] = double_list
@@ -68,8 +74,11 @@ class HyperParameterSearchSpace(object):
         return combinations
 
     def __str__(self):
-        return "HyperParameterSearchSpace(goal: {}, ".format(self.goal) + \
-            "params: {})".format(", ".join([element.__str__() for element in self.params]))
+        return "HyperParameterSearchSpace(goal: {}, ".format(
+            self.goal
+        ) + "params: {})".format(
+            ", ".join([element.__str__() for element in self.params])
+        )
 
     @staticmethod
     def convert_parameter(p):
@@ -87,7 +96,10 @@ class HyperParameterSearchSpace(object):
             return HyperParameter.discrete(p.name, p.feasible_space.list)
         else:
             logger.error(
-                "Cannot get the type for the parameter: %s (%s)", p.name, p.parameter_type)
+                "Cannot get the type for the parameter: %s (%s)",
+                p.name,
+                p.parameter_type,
+            )
 
 
 class HyperParameter(object):
@@ -107,7 +119,8 @@ class HyperParameter(object):
             )
         else:
             return "HyperParameter(name: {}, type: {}, list: {})".format(
-                self.name, self.type, ", ".join(self.list))
+                self.name, self.type, ", ".join(self.list)
+            )
 
     @staticmethod
     def int(name, min_, max_, step, distribution=None):
@@ -123,7 +136,9 @@ class HyperParameter(object):
 
     @staticmethod
     def categorical(name, lst):
-        return HyperParameter(name, constant.CATEGORICAL, 0, 0, [str(e) for e in lst], 0)
+        return HyperParameter(
+            name, constant.CATEGORICAL, 0, 0, [str(e) for e in lst], 0
+        )
 
     @staticmethod
     def discrete(name, lst):
