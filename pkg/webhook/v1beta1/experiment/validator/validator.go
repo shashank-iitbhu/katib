@@ -264,15 +264,13 @@ func (g *DefaultValidator) validateParameters(parameters []experimentsv1beta1.Pa
 				param.ParameterType, fmt.Sprintf("parameterType: %v is not supported", param.ParameterType)))
 		}
 
-		if param.FeasibleSpace.Distribution != "" {
-			if param.FeasibleSpace.Distribution != experimentsv1beta1.DistributionUniform &&
-				param.FeasibleSpace.Distribution != experimentsv1beta1.DistributionLogUniform &&
-				param.FeasibleSpace.Distribution != experimentsv1beta1.DistributionNormal &&
-				param.FeasibleSpace.Distribution != experimentsv1beta1.DistributionLogNormal &&
-				param.FeasibleSpace.Distribution != experimentsv1beta1.DistributionUnknown {
-				allErrs = append(allErrs, field.Invalid(parametersPath.Index(i).Child("feasibleSpace").Child("distribution"),
-					param.FeasibleSpace.Distribution, fmt.Sprintf("distribution: %v is not supported", param.FeasibleSpace.Distribution)))
-			}
+		if param.FeasibleSpace.Distribution != experimentsv1beta1.DistributionUniform &&
+			param.FeasibleSpace.Distribution != experimentsv1beta1.DistributionLogUniform &&
+			param.FeasibleSpace.Distribution != experimentsv1beta1.DistributionNormal &&
+			param.FeasibleSpace.Distribution != experimentsv1beta1.DistributionLogNormal &&
+			param.FeasibleSpace.Distribution != experimentsv1beta1.DistributionUnknown {
+			allErrs = append(allErrs, field.Invalid(parametersPath.Index(i).Child("feasibleSpace").Child("distribution"),
+				param.FeasibleSpace.Distribution, fmt.Sprintf("distribution: %v is not supported", param.FeasibleSpace.Distribution)))
 		}
 
 		if equality.Semantic.DeepEqual(param.FeasibleSpace, experimentsv1beta1.FeasibleSpace{}) {
